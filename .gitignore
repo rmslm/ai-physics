@@ -2,7 +2,6 @@
 __pycache__/
 
 # Build tool
-.nox/
 .ci-reports/
 
 # Unit test / coverage reports
@@ -22,3 +21,4 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+

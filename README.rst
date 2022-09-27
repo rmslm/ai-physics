@@ -1,6 +1,6 @@
 CNF Use-Case
 ===============
-The following is an effort to improve sub-grid scale LES models for combustion using artificial intelligence. This work is made under the RAISE european project: https://www.coe-raise.eu/
+The following is an effort to improve sub-grid scale LES models for combustion using artificial intelligence. This work uses data from a european project: https://www.coe-raise.eu/
 
 Description
 -----------------
@@ -15,3 +15,8 @@ The dataset can be `downloaded here <https://www.coe-raise.eu/open-data>`_, whic
 Models 
 -----------------
 This problem is approached two ways: via CNNs and with GNNs. A 3D U-net approach is used first to match the Lapeyre's paper. However, CNNs are hardly applicable in complex non-structured grids. GNNs, however, are more suitable for working with unstructured, complex geometries. 
+
+
+Some results
+-----------------
+
