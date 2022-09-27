@@ -1,109 +1,17 @@
-Philosophy
+CNF Use-Case
 ===============
-**Important note: at the moment, lots of code is purely being duplicated, because the focus has been made on the use-case (UC) content. Future works will refactor a bit the repository content to really abstract mutualizable data processing logic.**
+The following is an effort to improve sub-grid scale LES models for combustion using artificial intelligence. This work is made under the RAISE european project: https://www.coe-raise.eu/
 
-This project contains a collection of models developed by the Atos AI4sim R&D team and is intended for research purposes. The current workflow is based entirely on NumPy, PyTorch, Dask and Lightning. Domain-specific librairies can be added, like PyTorch Geometric for graph neural networks.
-
-Projects architecture
-===============
-
-To take care of the boiler-plate, early stopping, tensorboard logging, training parallelization etc. we integrate directly with PyTorch Lightning. For each new use-case, we use the same code architecture, described below.
-
-In all of the following, an experiment designates a specific training run (hyperparameters) with a specific model (neural architecture) and a specific dataset and splitting strategy.
-
-* *configs/* contains the experiments configuration YAML files, following the Lightning CLI format.
-* *data/* contains the `raw` and `processed` data directories, and normalization factors (and optionally explicit train/val/test split sets).
-* *tests/* contains unit tests modules.
-* *notebooks/* contains example Jupyter notebooks, for pedagogical purposes.
-* *config.py* exposes global paths and path specific to the current experiment.
-* *data.py* contains the dataset and datamodule.
-* *models.py* contains the model ("module"), including training logic. The architecture can be imported from specific librairies or a local module (e.g. unet.py).
-* *plotters.py* takes care of plots generation for the test set.
-* *trainer.py* is the main entrypoint responsible for creating a Trainer object, a CLI, and saving artifacts in the experiment directory.
-* *noxfile.py* is the Nox build tool configuration file that defines all targets available for the UC.
-
-Each project is made of two pipelines:
-
-* Data pipeline: a *DataModule* wraps a Dataset to provide data (with dataloaders, preprocessing...);
-* Model pipeline: a *Module* compiles a neural network architecture with its optimizer.
-The Trainer plugs both pipelines when called to run an experiment. It can be called by hand (CLI, with config files) or by another abstraction layer (e.g. hyperparameters optimization, meta learning)0
-
-.. image:: docs/project_archi.png
-   :scale: 50 %
-   :alt: Project code architecture
-   :align: center
-
-The Dataset can be implemented with various librairies, following the implicit convention that two folders are handled:
-
-* *data/raw* stores the raw data files;
-* *data/processed* stores the data after preprocessing, used for several experiments.
-
-Collections
-===============
-Collections are developed through partnerships with the ECMWF, the CERFACS, and INRIA.
-
-* Combustion
-
-    - CNF for Combustion and Flame (with Unets and GNNs)
-    - R2 and R3 are simulations of Aachen's flame, with different resolution
-
-* Weather Forecast
-
-    - Gravity Wave Drag
-    - 3D Bias Correction (with Unets and Attention CNNs)
-
-* WMED, Atmosphere-Oceanic Coupling
-
-Quick Start
-===============
-Each UC can be experimented in an easy and quick way using predifined command exposed through the Nox tool.
-
-Docker
+Description
 -----------------
-A docker file is provided to get started. To build the image, run the following command:
-::
-    docker build -t ai4sim .
+In the combustion community, the determination of the sub-grid scale contribution to the filtered reaction rate in reacting flows Large Eddy Simulation (LES) is an example of closure problem that has been daunting for a long time. A new approach is proposed for premixed turbulent combustion modeling based on convolutional neural networks by reformulating the problem of subgrid flame surface density estimation as a machine learning task.  In order to train a neural network for this task, a Direct Numerical Simulation (DNS) and the equivalent LES obtained by a spatial filtering of this DNS is needed.
+In a first step, two DNS of a methane-air slot burner are run and then filtered to create the training dataset. Models are trained on this data in a supervised manner. In a second step, a new, unseen and more difficult case was used to ensure network capabilities.
+This third DNS is a short-term transient started from the last field of the second DNS, where inlet velocity is doubled, going from 10 to 20 m/s for 1 ms, and then set back to its original value for 2 more ms.
 
-To install the corresponding python requirements for a use-case an entrypoint is implemented. It can be selected by one of the folling [combustion_gnns, combustion_unets, wf_gwd]:
-::
-    docker run -it --rm ai4sim ./script.sh combustion_gnns
-
-To get inside the container:
-::
-    docker run -it --rm -e bash ai4sim
-
-Requirements
+Dataset
 -----------------
-The following procedures only require [Nox](https://nox.thea.codes/en/stable/) is a python build tool, that allows to define targets (in a similar way that Make does), to simplify command execution in development and CI/CD pipeline. By default, each nox target is executed, in a specific virtualenv that ensure code partitioning and experiments reproducibility.
-::
-    pip install nox
+The dataset can be `downloaded here <https://www.coe-raise.eu/open-data>`_, which contains 113 scalar fields for a progress variable (input) and the target value of the flame surface density (output) used in for a LES combustion model. Those fields are obtained from DNS simulations and filtered to match a typical LES simulation. More details on how the dataset is created in the preprint `Lapeyre et al. (2018) <https://arxiv.org/abs/1810.03691>`_.
 
-Experiment a use case
+Models 
 -----------------
-Several Nox targets allow to handle easily an experimentation of any use case on a demo dataset and configuration.
-
-Choose the _Model Collection_ use case you want to experiment and go in.
-::
-    cd weather_forcast/gwd
-There you can display the list of the available targets with
-::
-    nox --list
-
-Please note, some of them are experimentation oriented, while other ones are CI/CD oriented.
-
-*Coming soon ...*
-
-You can launch a demo training on the model use case with ``nox -s train``
-
-Development mode
------------------
-The nox target are also very useful to launch generic command during development phase.
-
-Run unit tests
-~~~~~~~~~~~~~~~~~~~~~~
-You can run the whole unit test suite of a use case, using ``pytest``, with ``nox -s tests``.
-This target also prints out the coverage report and save a xml version in ``.ci-reports/``.
-
-Run linting
-~~~~~~~~~~~~~~~~~~~~~~
-You can run the python linting of the code use case, using ``flake8``, with ``nox -s lint``.
+This problem is approached two ways: via CNNs and with GNNs. A 3D U-net approach is used first to match the Lapeyre's paper. However, CNNs are hardly applicable in complex non-structured grids. GNNs, however, are more suitable for working with unstructured, complex geometries. 
