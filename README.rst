@@ -22,7 +22,7 @@ Some results
 
 Here is a result of the inference. The following graph shows the mean value along orthogonal axis to the inlet velocity of the flame.
 
-.. image:: combustion/result.jpg
+.. image:: combustion/results/result.jpg
    :scale: 50 %
    :alt: Some results
    :align: center
